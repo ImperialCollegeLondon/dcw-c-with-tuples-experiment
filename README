@@ -2,22 +2,25 @@ In LinkedIn's Plain Old C Programming group, Rick Marshall asked about why Tuple
 aren't implemented in C.  As a thought experiment, I wondered whether we could
 graft tuple-returning functions into C via a simple-minded pre-processor.
 
-It would let most lines through unchanged, but process 3 or 4 types of specially marked "C with tuples"
-lines into normal C?
+It would let most lines through unchanged, but process 3 or 4 types of specially
+marked "C with tuples" lines into normal C?
 
 eg.
 
 %proto static (int, int, char *) fred( double );
 
-would declare the existence of a "tuple-returning function" called fred, taking a double and returning
-a 3-tuple comprising two ints and a char *. It would emit normal C code:
+would declare the existence of a "tuple-returning function" called fred, taking a
+double and returning a 3-tuple comprising two ints and a char *.
+
+It would emit the following normal C code:
 
 static int fred( double, int *, char **);
 
 
 %func static (int, int, char *) fred( double a );
 
-defines a "tuple-returning function" called fred, taking a double and returning a 3-tuple comprising two ints and a char *. It would emit normal C code:
+defines a "tuple-returning function" called fred, taking a double and returning
+a 3-tuple comprising two ints and a char *. It would emit normal C code:
 
 static int fred( double a, int *tp1, char **tp2 )
 
@@ -31,30 +34,37 @@ returns the tuple (3,5,"hello") - of tuple type (int,int,char *). It would emit:
 
 %call (int x, int y, char *string ) = fred( 9.5 );
 
-calls the tuple returning function fred with normal argument 9.5, and breaks down the returned tuple into 3 new variables (x,y,string). It would emit:
+calls the tuple returning function fred with normal argument 9.5, and breaks down
+the returned tuple into 3 new variables (x,y,string). It would emit:
 
 int x; int y; char *string;
 x = fred( 9.5, &y, &string );
 
 Note that various semantic checks could be made too:
 
-- when a %proto line is parsed, fred -> ( static function taking double and returning int, int, char *
-  would be added to %tuple-func-info.
+- when a %proto line is parsed, we add fred's entry to %tuple-func-info.
+  the entry encodes that fred is a static function taking double and returning
+  int, int, char *, and that we've only seen it's %proto so far.
 
-- when a %func line is parsed, first we would check whether the function is already known in
-  %tuple-func-info, and if so check it's type signature against the %func definition,
-  otherwise fred -> ( static function taking double and returning int, int, char *
-  would be added to %tuple-func-info.  also current-function would be set to fred.
+- when a %func line is parsed, first we check whether the function is
+  already known in %tuple-func-info, and if so whether the previous definition
+  was a %proto declaration.  If not, that's a function redefinition error.
+  Otherwise, check fred's type signature from the previous %proto declaration
+  against the %func definition we see now, error if they are different.
+  Otherwise we add fred -> ( static function taking double and returning
+  int, int, char * ) to %tuple-func-info.  also set current-function to fred.
 
-- when a %return line is parsed, first we would check that current-function is set, and
-  retrieve current-function's type signature from %tuple-func-info, and then we would check
-  that there are the correct number of values.  as these are full blown C expressions, unless
-  we build a serious parser we can't check the type of the values.
+- when a %return line is parsed, first we check that current-function is set,
+  and retrieve current-function's type signature from %tuple-func-info,
+  and then we check that there are the correct number of values.  Note: As
+  these are full blown C expressions, unless we build a serious parser we
+  can't check the type of the values so counting is all we can do.
 
-- when a %call line is parsed, we'd check that the function is present in %tuple-func-info (meaning
-  that either a %proto or a %func or both have been seen for that function), then we'd retrieve
-  the type signature, then we'd check that there were the right number of parameters - expressions
-  again, so count-checking only - and check that the tuple destructor matched the return type.
+- when a %call line is parsed, we check that the function is present in
+  %tuple-func-info (meaning that either a %proto or a %func or both have been
+  seen for that function). Then we retrieve the type signature, then we check
+  that there were the right number of parameters - expressions again, so
+  count-checking only - and check that the tuple assignment matched the return type.
 
 ct.perl implements everything but %proto using a non-core Perl module called Function::Parameters
 that gives nicer function definition syntax.
