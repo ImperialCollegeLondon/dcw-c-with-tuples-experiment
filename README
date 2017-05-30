@@ -67,9 +67,18 @@ Note that various semantic checks could be made too:
   count-checking only - and check that the tuple assignment matched the return type.
 
 ct.perl implements everything but %proto using a non-core Perl module called Function::Parameters
-that gives nicer function definition syntax.
+that gives nicer function definition syntax.  It even tries to compile and run the generated
+.c code.
 
 ct-subs.perl implements the same without using Function::Parameters, to make it easier for people
-to experiment with it.
+to experiment with it.  It also compiles and runs the generated .c code.
+
+Get started by:
+
+looking at eg1.ct for the "fred" example above, and then:
+
+./ct-subs.perl eg1.ct eek.c
+
+This GENERATES eek.c, then compiles it via gcc -Wall creating a.out and then runs it.
 
 						Duncan C. White, May 2017
