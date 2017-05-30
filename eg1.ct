@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-%func (int, int, char *) fred( double a, char *wibble )
+%func static (int, int, char *) fred( double a, char *wibble )
 {
 	if( a > 10.0 )
 	{
