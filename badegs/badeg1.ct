@@ -1,0 +1,21 @@
+#include <stdio.h>
+
+// bad: return outside of function
+
+%return ( 1, 2, 3 );
+
+%func (int, int, char *) fred( double a )
+{
+	if( a > 10.0 )
+	{
+%		return (7, 8, "a>10" );
+	}
+%	return (-1, -2, "a<=10" );
+}
+
+int main()
+{
+%	call (int x, int y, char *string ) = fred( 7.5 );
+	printf( "x=%d, y=%d, string=%s\n", x, y, string );
+	return 0;
+}

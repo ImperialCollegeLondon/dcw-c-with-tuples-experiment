@@ -1,0 +1,18 @@
+#include <stdio.h>
+
+%func (int, int, char *) fred( double a, char *wibble )
+{
+	if( a > 10.0 )
+	{
+%		return (7, 8, "a>10");
+	}
+%	return (-1, -2, "a<=10" );
+}
+
+int main()
+{
+	int n = 123;
+%	call (int x, int y, char *string ) = fred( 7.5+n, "wibble" );
+	printf( "x=%d, y=%d, string=%s\n", x, y, string );
+	return 0;
+}
